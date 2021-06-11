@@ -7,7 +7,6 @@
         <v-text-field
             class="text-field"
             v-model="input.username"
-            :rules="usernameRules"
             label="Username"
             clearable
         ></v-text-field>
@@ -38,7 +37,7 @@
             </template>
             <span>Use this option if you had an account <br/>created by your institution</span>
           </v-tooltip>
-
+          <br/>
           <v-tooltip right>
             <template v-slot:activator="{ on, attrs }">
               <v-btn color="success"

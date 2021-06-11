@@ -85,6 +85,7 @@
 <script>
   export default {
     name: "Register",
+
     data() {
       return {
         registerFormSubmitted: false,
@@ -117,6 +118,7 @@
         ],
       }
     },
+
     methods: {
       register() {
         if (!this.$refs.form.validate()) {

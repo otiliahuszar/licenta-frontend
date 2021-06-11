@@ -21,7 +21,7 @@
       <v-btn color="white"
              elevation="4"
              depressed small
-             style="margin-left: 10px;"
+             style="margin-left: 20px;"
              to="/login">
         <v-icon>mdi-account-key</v-icon>
         Login
@@ -30,7 +30,7 @@
       <v-btn color="white"
              elevation="4"
              depressed small
-             style="margin-left: 10px;"
+             style="margin-left: 20px;"
              to="/register">
         <v-icon>mdi-account-plus</v-icon>
         Register

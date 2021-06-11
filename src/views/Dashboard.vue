@@ -1,5 +1,7 @@
 <template>
-  <div></div>
+  <v-container>
+    <h1 style="text-align: center;">Dashboard</h1>
+  </v-container>
 </template>
 
 <script>

@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <v-app-bar app color="success">
-      <div class="d-flex align-center" style="width: 300px">
+      <div class="d-flex align-center" style="width: 400px">
         <v-img
             alt="Logo"
             class="shrink mr-2"
@@ -11,9 +11,9 @@
             style="width: 50px"
         ></v-img>
 
-        <v-app-bar-title style="padding-left: 10px; font-weight: bold">
+        <div style="padding-left: 5px; font-weight: bold; font-size: 20px">
           Timetable Manager
-        </v-app-bar-title>
+        </div>
       </div>
 
       <v-spacer></v-spacer>
@@ -31,7 +31,7 @@
              elevation="4"
              depressed small
              style="margin-left: 10px;"
-             to="/login">
+             to="/register">
         <v-icon>mdi-magnify-close</v-icon>
         Register
       </v-btn>

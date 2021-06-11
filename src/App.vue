@@ -23,7 +23,7 @@
              depressed small
              style="margin-left: 10px;"
              to="/login">
-        <v-icon>mdi-magnify-close</v-icon>
+        <v-icon>mdi-account-key</v-icon>
         Login
       </v-btn>
 
@@ -32,7 +32,7 @@
              depressed small
              style="margin-left: 10px;"
              to="/register">
-        <v-icon>mdi-magnify-close</v-icon>
+        <v-icon>mdi-account-plus</v-icon>
         Register
       </v-btn>
 

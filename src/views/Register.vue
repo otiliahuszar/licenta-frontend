@@ -10,7 +10,6 @@
             :rules="nameRules"
             :counter="20"
             label="First name"
-            required
             clearable
         ></v-text-field>
         <v-text-field
@@ -19,7 +18,6 @@
             :rules="nameRules"
             :counter="20"
             label="Last name"
-            required
             clearable
         ></v-text-field>
         <v-text-field
@@ -27,7 +25,6 @@
             v-model="input.email"
             :rules="emailRules"
             label="Email"
-            required
             clearable
         ></v-text-field>
         <v-text-field
@@ -35,7 +32,6 @@
             v-model="input.username"
             :rules="usernameRules"
             label="Username"
-            required
             clearable
         ></v-text-field>
         <v-text-field
@@ -43,7 +39,6 @@
             v-model="input.password"
             :rules="passwordRules"
             label="Password"
-            required
             counter
             :type="showPass ? 'text' : 'password'"
             :append-icon="showPass ? 'mdi-eye' : 'mdi-eye-off'"
@@ -54,7 +49,6 @@
             v-model="input.passwordConf"
             :rules="passwordRules"
             label="Confirm password"
-            required
             counter
             :type="showPass2 ? 'text' : 'password'"
             :append-icon="showPass2 ? 'mdi-eye' : 'mdi-eye-off'"

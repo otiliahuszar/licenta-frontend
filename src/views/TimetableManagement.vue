@@ -1,12 +1,12 @@
 <template>
   <v-container>
-    <h1 style="text-align: center;">Dashboard</h1>
+    <h1 style="text-align: center;">Timetable Management</h1>
   </v-container>
 </template>
 
 <script>
     export default {
-        name: "Dashboard"
+        name: "Timetable Management"
     }
 </script>
 

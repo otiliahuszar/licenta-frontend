@@ -14,3 +14,13 @@ new Vue({
     vuetify,
     render: h => h(App)
 }).$mount('#app');
+
+Vue.http.interceptors.push((request, next) => {
+    next((response) => {
+        if (response.status === 401) {
+            localStorage.clear();
+            router.push('/login');
+        }
+        return response
+    })
+});

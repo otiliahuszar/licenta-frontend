@@ -1,32 +1,54 @@
 <template>
-  <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
-  </div>
+  <v-app>
+    <v-app-bar app color="success">
+      <div class="d-flex align-center" style="width: 300px">
+        <v-img
+            alt="Logo"
+            class="shrink mr-2"
+            contain
+            :src="require('./assets/logo.png')"
+            transition="scale-transition"
+            style="width: 50px"
+        ></v-img>
+
+        <v-app-bar-title style="padding-left: 10px; font-weight: bold">
+          Timetable Manager
+        </v-app-bar-title>
+      </div>
+
+      <v-spacer></v-spacer>
+
+      <v-btn color="white"
+             elevation="4"
+             depressed small
+             style="margin-left: 10px;"
+             to="/login">
+        <v-icon>mdi-magnify-close</v-icon>
+        Login
+      </v-btn>
+
+      <v-btn color="white"
+             elevation="4"
+             depressed small
+             style="margin-left: 10px;"
+             to="/login">
+        <v-icon>mdi-magnify-close</v-icon>
+        Register
+      </v-btn>
+
+    </v-app-bar>
+
+    <v-main>
+      <router-view/>
+    </v-main>
+  </v-app>
 </template>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
+<script>
 
-#nav {
-  padding: 30px;
-}
+    export default {
+        name: 'App',
 
-#nav a {
-  font-weight: bold;
-  color: #2c3e50;
-}
-
-#nav a.router-link-exact-active {
-  color: #42b983;
-}
-</style>
+        data: () => ({}),
+    };
+</script>

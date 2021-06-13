@@ -87,8 +87,13 @@
       </v-col>
 
       <v-col sm="8" style="border: 1pt solid red;">
-        #TODO insert timetable view<br/>
-        {{this.timetable}}
+        <div v-if="this.timetable.length === 0"
+             style="text-align: center; font-size: 26px; padding-top: 80px">
+          No courses exist for your institution!<br/>Create some using the form on the left.
+        </div>
+        <div v-if="this.timetable.length !== 0">
+          {{this.timetable}}
+        </div>
       </v-col>
 
     </v-row>
@@ -121,13 +126,28 @@
         },
         startDateMenu: false,
         endDateMenu: false,
-        timetable: null,
         createTimetableError: null,
-        csvErrors: []
+        csvErrors: [],
+        timetable: []
       }
     },
 
     methods: {
+      searchCourses() {
+        this.$http.get('/api/courses/admin',
+            {
+              params: {
+                specializationId: this.input.specializationId,
+                subjectId: this.input.subjectId,
+                teacherId: this.input.teacherId
+              },
+              headers: {
+                'Authorization': localStorage.getItem('token')
+              }
+            })
+            .then(response => this.timetable = response.data)
+      },
+
       createTimetable() {
         if (!this.$refs.form.validate()) {
           return;
@@ -143,11 +163,11 @@
                     'Authorization': localStorage.getItem('token')
                   }
                 }))
-            .then(response => {
-              this.timetable = response.data;
+            .then(() => {
               this.createTimetableError = null;
               this.csvErrors = [];
             })
+            .then(() => this.searchCourses())
             .catch(error => {
               this.createTimetableError = error.body.message;
               this.csvErrors = error.body.errors;
@@ -166,6 +186,10 @@
           fr.onerror = reject;
         })
       },
+    },
+
+    beforeMount() {
+      this.searchCourses();
     }
   }
 </script>

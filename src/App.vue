@@ -22,7 +22,8 @@
              elevation="4"
              depressed small
              style="margin-left: 20px;"
-             to="/login">
+             to="/login"
+             v-if="!isLoggedIn()">
         <v-icon>mdi-account-key</v-icon>
         Login
       </v-btn>
@@ -31,9 +32,25 @@
              elevation="4"
              depressed small
              style="margin-left: 20px;"
-             to="/register">
+             to="/register"
+             v-if="!isLoggedIn()">
         <v-icon>mdi-account-plus</v-icon>
         Register
+      </v-btn>
+
+      <div v-if="isLoggedIn()"
+      style="font-size: 14px; font-style: italic">
+        Hello, {{ this.getUserName() }}
+      </div>
+
+      <v-btn color="white"
+             elevation="4"
+             depressed small
+             style="margin-left: 20px;"
+             @click="logout()"
+             v-if="isLoggedIn()">
+        <v-icon>mdi-account-remove</v-icon>
+        Logout
       </v-btn>
 
     </v-app-bar>
@@ -46,9 +63,28 @@
 
 <script>
 
-    export default {
-        name: 'App',
+export default {
+  name: 'App',
 
-        data: () => ({}),
-    };
+  data() {
+    return {}
+  },
+
+  methods: {
+    logout() {
+      localStorage.clear();
+      this.$router.push("/");
+    },
+    isLoggedIn() {
+      return localStorage.getItem('token') !== null;
+    },
+    getUserName() {
+      let user = localStorage.getItem('user');
+      if (user === null) {
+        return null;
+      }
+      return JSON.parse(user).firstName;
+    }
+  }
+};
 </script>

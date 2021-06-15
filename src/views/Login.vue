@@ -58,43 +58,48 @@
 </template>
 
 <script>
-  export default {
-    name: "Login",
-    data() {
-      return {
-        loginFormError: null,
-        showPass: false,
-        input: {
-          username: null,
-          password: null
-        }
-      }
-    },
-    methods: {
-      dbLogin() {
-        this.login('/api/auth/login')
-      },
-      ldapLogin() {
-        this.login('/api/auth/login/ldap')
-      },
-
-      login(path) {
-        if (!this.$refs.form.validate()) {
-          return;
-        }
-        this.$http.post(path, {
-          username: this.input.username,
-          password: this.input.password
-        })
-            .then(response => {
-              localStorage.setItem('token', response.data.token);
-              localStorage.setItem('user', JSON.stringify(response.data.user))
-            })
-            .then(() => this.$router.push('/timetable/admin'))
-            .catch(error => this.loginFormError = error.body.message)
+export default {
+  name: "Login",
+  data() {
+    return {
+      loginFormError: null,
+      showPass: false,
+      input: {
+        username: null,
+        password: null
       }
     }
+  },
+  methods: {
+    dbLogin() {
+      this.login('/api/auth/login')
+    },
+    ldapLogin() {
+      this.login('/api/auth/login/ldap')
+    },
+
+    login(path) {
+      if (!this.$refs.form.validate()) {
+        return;
+      }
+      this.$http.post(path, {
+        username: this.input.username,
+        password: this.input.password
+      })
+          .then(response => {
+            localStorage.setItem('token', response.data.token);
+            localStorage.setItem('user', JSON.stringify(response.data.user))
+
+            let path = '/timetable';
+            if (response.data.user.role === 'ADMIN') {
+              path += '/admin';
+            }
+            this.$router.push(path);
+          })
+          .catch(error => this.loginFormError = error.body.message)
+    }
   }
+}
 </script>
 
 <style scoped>

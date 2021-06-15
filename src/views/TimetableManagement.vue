@@ -196,7 +196,6 @@
                     :type="calendar.type"
                     :weekdays="calendar.weekday"
                     :event-overlap-mode="calendar.mode"
-                    @click:event="viewCourse"
                     @click:more="viewDay"
                     @click:date="viewDay"
                     @change="searchCalendarCourses"
@@ -313,7 +312,7 @@ export default {
     },
 
     searchCourses() {
-      this.$http.get('/api/courses/admin',
+      this.$http.get('/api/courses',
           {
             params: {
               specializationId: this.input.specialization.id,
@@ -331,10 +330,10 @@ export default {
             let t = response.data;
             for (let i = 0; i < t.length; i++) {
               let course = t[i];
-              course["name"] = course.specialization.name + '-' + course.subject.name + ', ' + course.teacher.name;
+              course["name"] = course.specialization.internalId + ' - ' + course.subject.internalId + ', ' + course.teacher.name;
               course["start"] = course.date + ' ' + course.startHour + ':00';
               course["end"] = course.date + ' ' + course.endHour + ':00';
-              course["color"] = this.getColor(course.specialization.name)
+              course["color"] = this.getColor(course.specialization.internalId);
               this.timetable.push(course);
             }
             if (this.initialSearchIsEmpty === null) {

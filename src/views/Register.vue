@@ -70,7 +70,7 @@
       </v-form>
 
       <div v-if="registerFormSubmitted" style="text-align: center; margin-top: 20px">
-        <h3>Your user was created, continue by logging in</h3>
+        <h3>Your user was created, you can continue by logging in</h3>
         <v-btn color="success"
                elevation="4" large
                to="/login"

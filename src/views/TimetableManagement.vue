@@ -196,11 +196,185 @@
                     :type="calendar.type"
                     :weekdays="calendar.weekday"
                     :event-overlap-mode="calendar.mode"
+                    @click:event="displayCourse"
                     @click:more="viewDay"
                     @click:date="viewDay"
                     @change="searchCalendarCourses"
                 ></v-calendar>
+                <v-menu
+                    v-model="viewCourse.selectedOpen"
+                    :close-on-content-click="false"
+                    :activator="viewCourse.selectedCourse"
+                    offset-y>
+                  <v-card
+                      color="grey lighten-4"
+                      min-width="350px" max-height="600px">
+                    <v-toolbar :color="viewCourse.selectedEvent.color" height="50">
+                      <v-toolbar-title
+                          v-html="viewCourse.selectedEvent.name"
+                          style="color: white; font-size: 16px"
+                      ></v-toolbar-title>
+                      <v-spacer></v-spacer>
+                      <v-btn icon @click.stop="displayEditDialog()">
+                        <v-icon>mdi-pencil</v-icon>
+                      </v-btn>
+                      <v-btn icon @click.stop="viewCourse.deleteDialog = true">
+                        <v-icon>mdi-delete</v-icon>
+                      </v-btn>
+                    </v-toolbar>
+                    <v-card-text>
+                      <div v-if="viewCourse.selectedEvent.specialization">
+                        <b>Specialization: </b>{{ viewCourse.selectedEvent.specialization.name }}
+                        ({{ viewCourse.selectedEvent.specialization.internalId }})
+                      </div>
+                      <div v-if="viewCourse.selectedEvent.subject">
+                        <b>Subject: </b>{{ viewCourse.selectedEvent.subject.name }}
+                        ({{ viewCourse.selectedEvent.subject.internalId }})
+                      </div>
+                      <div v-if="viewCourse.selectedEvent.teacher">
+                        <b>Teacher: </b>{{ viewCourse.selectedEvent.teacher.name }}
+                        ({{ viewCourse.selectedEvent.teacher.internalId }})
+                      </div>
+                      <div v-if="viewCourse.selectedEvent.date">
+                        <b>Date: </b>{{ viewCourse.selectedEvent.date }}
+                        ({{ viewCourse.selectedEvent.startHour }}-{{ viewCourse.selectedEvent.endHour }})
+                      </div>
+                      <hr style="margin-top: 5px; margin-bottom: 5px"/>
+                      <div v-if="viewCourse.selectedEvent.title !== null">
+                        <b>Title: </b>{{ viewCourse.selectedEvent.title }}
+                      </div>
+                      <div v-if="viewCourse.selectedEvent.description !== null">
+                        <b>Description: </b>{{ viewCourse.selectedEvent.description }}
+                      </div>
+                      <div v-if="viewCourse.selectedEvent.location !== null">
+                        <b>Location: </b>{{ viewCourse.selectedEvent.location }}
+                      </div>
+                      <div v-if="viewCourse.selectedEvent.resources !== null">
+                        <b>Resources: </b>{{ viewCourse.selectedEvent.resources }}
+                      </div>
+                      <div>
+                        <b>Public: </b>{{ viewCourse.selectedEvent.isPublic }}
+                      </div>
+                    </v-card-text>
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn text color="secondary"
+                             @click="viewCourse.selectedOpen = false">
+                        Cancel
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-menu>
+
+                <v-dialog
+                    v-model="viewCourse.deleteDialog"
+                    persistent
+                    max-width="400px">
+                  <v-card>
+                    <v-card-title class="text-h5">
+                      Delete course
+                    </v-card-title>
+                    <v-card-text>
+                      Are you sure you want to delete the selected course?
+                    </v-card-text>
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn color="success" text @click="viewCourse.deleteDialog = false">
+                        No
+                      </v-btn>
+                      <v-btn color="success" text @click="deleteCourse(), viewCourse.deleteDialog = false">
+                        Yes
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+
+                <v-dialog
+                    v-model="viewCourse.editDialog"
+                    persistent
+                    max-width="400px">
+                  <v-card>
+                    <v-card-title class="text-h5">
+                      Edit course
+                    </v-card-title>
+                    <v-card-text>
+                      <v-container>
+                        <v-form ref="editCourseForm">
+                          <v-text-field
+                              v-if="viewCourse.selectedEvent.specialization !== undefined"
+                              v-model="viewCourse.selectedEvent.specialization.name"
+                              label="Specialization"
+                              disabled
+                          ></v-text-field>
+                          <v-text-field
+                              v-if="viewCourse.selectedEvent.subject !== undefined"
+                              v-model="viewCourse.selectedEvent.subject.name"
+                              label="Subject"
+                              disabled
+                          ></v-text-field>
+                          <v-text-field
+                              v-if="viewCourse.selectedEvent.teacher !== undefined"
+                              v-model="viewCourse.selectedEvent.teacher.name"
+                              label="Teacher"
+                              disabled
+                          ></v-text-field>
+                          <v-menu ref="courseDate" v-model="courseDateMenu"
+                                  :close-on-content-click="true"
+                                  transition="scale-transition"
+                                  offset-y min-width="auto"
+                          >
+                            <template v-slot:activator="{ on, attrs }">
+                              <v-text-field v-model="editCourseInput.date"
+                                            label="Date"
+                                            prepend-icon="mdi-calendar"
+                                            readonly clearable
+                                            v-bind="attrs" v-on="on"
+                                            :rules="courseDateRules"
+                                            :close-on-content-click="true"
+                                            style="margin-top: 15px"
+                              ></v-text-field>
+                            </template>
+                            <v-date-picker v-model="editCourseInput.date" color="success" no-title scrollable>
+                              <v-spacer></v-spacer>
+                              <v-btn text color="success"
+                                     @click="courseDateMenu = false">
+                                Cancel
+                              </v-btn>
+                            </v-date-picker>
+                          </v-menu>
+                          <v-text-field
+                              prepend-icon="mdi-clock"
+                              v-model="editCourseInput.startHour"
+                              label="Start hour"
+                              clearable
+                              type="number"
+                              :rules="startHourRules"
+                          ></v-text-field>
+                          <v-text-field
+                              prepend-icon="mdi-clock"
+                              v-model="editCourseInput.endHour"
+                              label="End hour"
+                              clearable
+                              type="number"
+                              :rules="endHourRules"
+                          ></v-text-field>
+                        </v-form>
+                      </v-container>
+                    </v-card-text>
+                    <v-card-actions>
+                      <v-spacer></v-spacer>
+                      <v-btn color="success" text @click="viewCourse.editDialog = false">
+                        Cancel
+                      </v-btn>
+                      <v-btn color="success" text @click="editCourse()">
+                        Save
+                      </v-btn>
+                    </v-card-actions>
+                  </v-card>
+                </v-dialog>
+
               </v-sheet>
+              <v-overlay :value="viewCourse.selectedOpen"></v-overlay>
             </v-col>
           </v-row>
         </div>
@@ -260,7 +434,29 @@ export default {
         specializations: [],
         subjects: [],
         teachers: []
-      }
+      },
+      viewCourse: {
+        selectedCourse: null,
+        selectedEvent: {},
+        selectedOpen: false,
+        deleteDialog: false,
+        editDialog: false
+      },
+      courseDateMenu: false,
+      courseDateRules: [
+        v => !!v || 'Date is required',
+        v => !!v && (v > new Date().toISOString().substr(0, 10)) || 'Date must be in the future'
+      ],
+      startHourRules: [
+        v => !!v || 'Start hour is required',
+        v => !!v && v >= 0 && v <= 23 || 'Start hour must be a number between 0 and 23'
+      ],
+      endHourRules: [
+        v => !!v || 'End hour is required',
+        v => !!v && v >= 1 && v <= 24 || 'End hour must be a number between 1 and 24',
+        v => !!v && !!this.editCourseInput.startHour && (v > this.editCourseInput.startHour) || 'End hour must be after start hour'
+      ],
+      editCourseInput: {},
     }
   },
 
@@ -397,6 +593,66 @@ export default {
       this.input.specialization = {id: null, name: null};
       this.input.subject = {id: null, name: null};
       this.input.teacher = {id: null, name: null};
+    },
+
+    displayCourse({nativeEvent, event}) {
+      const open = () => {
+        this.viewCourse.selectedEvent = event
+        this.viewCourse.selectedCourse = nativeEvent.target
+        requestAnimationFrame(() =>
+            requestAnimationFrame(() => this.viewCourse.selectedOpen = true))
+      }
+
+      if (this.viewCourse.selectedOpen) {
+        this.viewCourse.selectedOpen = false
+        requestAnimationFrame(() =>
+            requestAnimationFrame(() => open()))
+      } else {
+        open()
+      }
+      nativeEvent.stopPropagation()
+    },
+
+    deleteCourse() {
+      let courseId = this.viewCourse.selectedEvent.id;
+      this.$http.delete('/api/courses/' + courseId,
+          {
+            headers: {
+              'Authorization': localStorage.getItem('token')
+            }
+          })
+          .then(() => this.searchCourses())
+    },
+
+    displayEditDialog() {
+      this.viewCourse.editDialog = true;
+
+      let course = this.viewCourse.selectedEvent;
+      this.editCourseInput = {
+        date: course.date,
+        startHour: course.startHour,
+        endHour: course.endHour,
+        title: course.title,
+        description: course.description,
+        location: course.location,
+        resources: course.resources,
+        isPublic: course.isPublic
+      }
+    },
+
+    editCourse() {
+      if (!this.$refs.editCourseForm.validate()) {
+        return;
+      }
+      let courseId = this.viewCourse.selectedEvent.id;
+      this.$http.put('/api/courses/' + courseId, this.editCourseInput,
+          {
+            headers: {
+              'Authorization': localStorage.getItem('token')
+            }
+          })
+          .then(() => this.viewCourse.editDialog = false)
+          .then(() => this.searchCourses())
     }
   },
 

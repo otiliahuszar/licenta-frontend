@@ -5,13 +5,11 @@
 
       <v-form ref="form">
         <v-text-field
-            class="text-field"
             v-model="input.username"
             label="Username"
             clearable
         ></v-text-field>
         <v-text-field
-            class="text-field"
             v-model="input.password"
             label="Password"
             :type="showPass ? 'text' : 'password'"

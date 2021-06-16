@@ -95,11 +95,74 @@
               :type="calendar.type"
               :weekdays="calendar.weekday"
               :event-overlap-mode="calendar.mode"
+              @click:event="displayCourse"
               @click:more="viewDay"
               @click:date="viewDay"
               @change="searchCalendarCourses"
           ></v-calendar>
+          <v-menu
+              v-model="viewCourse.selectedOpen"
+              :close-on-content-click="false"
+              :activator="viewCourse.selectedCourse"
+              offset-y>
+            <v-card
+                color="grey lighten-4"
+                min-width="350px">
+              <v-toolbar :color="viewCourse.selectedEvent.color" height="50">
+                <v-toolbar-title
+                    v-html="viewCourse.selectedEvent.name"
+                    style="color: white; font-size: 16px"
+                ></v-toolbar-title>
+                <v-spacer></v-spacer>
+                <v-btn icon v-if="isTeacher()">
+                  <v-icon>mdi-pencil</v-icon>
+                </v-btn>
+              </v-toolbar>
+              <v-card-text>
+                <div v-if="viewCourse.selectedEvent.specialization">
+                  <b>Specialization: </b>{{ viewCourse.selectedEvent.specialization.name }}
+                  ({{ viewCourse.selectedEvent.specialization.internalId }})
+                </div>
+                <div v-if="viewCourse.selectedEvent.subject">
+                  <b>Subject: </b>{{ viewCourse.selectedEvent.subject.name }}
+                  ({{ viewCourse.selectedEvent.subject.internalId }})
+                </div>
+                <div v-if="viewCourse.selectedEvent.teacher">
+                  <b>Teacher: </b>{{ viewCourse.selectedEvent.teacher.name }}
+                  ({{ viewCourse.selectedEvent.teacher.internalId }})
+                </div>
+                <div v-if="viewCourse.selectedEvent.date">
+                  <b>Date: </b>{{ viewCourse.selectedEvent.date }}
+                  ({{ viewCourse.selectedEvent.startHour }}-{{ viewCourse.selectedEvent.endHour }})
+                </div>
+                <hr style="margin-top: 5px; margin-bottom: 5px"/>
+                <div v-if="viewCourse.selectedEvent.title !== null">
+                  <b>Title: </b>{{ viewCourse.selectedEvent.title }}
+                </div>
+                <div v-if="viewCourse.selectedEvent.description !== null">
+                  <b>Description: </b>{{ viewCourse.selectedEvent.description }}
+                </div>
+                <div v-if="viewCourse.selectedEvent.location !== null">
+                  <b>Location: </b>{{ viewCourse.selectedEvent.location }}
+                </div>
+                <div v-if="viewCourse.selectedEvent.resources !== null">
+                  <b>Resources: </b>{{ viewCourse.selectedEvent.resources }}
+                </div>
+                <div>
+                  <b>Public: </b>{{ viewCourse.selectedEvent.isPublic }}
+                </div>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn text color="secondary"
+                       @click="viewCourse.selectedOpen = false">
+                  Cancel
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-menu>
         </v-sheet>
+        <v-overlay :value="viewCourse.selectedOpen"></v-overlay>
       </v-col>
     </v-row>
   </v-container>
@@ -136,7 +199,12 @@ export default {
         subjects: [],
         teachers: []
       },
-      userRole: null
+      userRole: null,
+      viewCourse: {
+        selectedCourse: null,
+        selectedEvent: {},
+        selectedOpen: false,
+      }
     }
   },
 
@@ -254,6 +322,24 @@ export default {
     clearDropdownsAndSearch() {
       this.clearDropdowns();
       this.searchCourses();
+    },
+
+    displayCourse({nativeEvent, event}) {
+      const open = () => {
+        this.viewCourse.selectedEvent = event
+        this.viewCourse.selectedCourse = nativeEvent.target
+        requestAnimationFrame(() =>
+            requestAnimationFrame(() => this.viewCourse.selectedOpen = true))
+      }
+
+      if (this.viewCourse.selectedOpen) {
+        this.viewCourse.selectedOpen = false
+        requestAnimationFrame(() =>
+            requestAnimationFrame(() => open()))
+      } else {
+        open()
+      }
+      nativeEvent.stopPropagation()
     },
   },
 

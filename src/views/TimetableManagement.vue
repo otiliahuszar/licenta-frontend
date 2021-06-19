@@ -187,6 +187,11 @@
                 </v-toolbar>
               </v-sheet>
 
+              <v-alert v-if="alert" type="success"
+                       dense text outlined
+                       transition="fade-transition">
+                {{ this.alertText }}
+              </v-alert>
               <v-sheet height="600">
                 <v-calendar
                     ref="calendar"
@@ -304,19 +309,19 @@
                               v-if="viewCourse.selectedEvent.specialization !== undefined"
                               v-model="viewCourse.selectedEvent.specialization.name"
                               label="Specialization"
-                              disabled
+                              disabled dense
                           ></v-text-field>
                           <v-text-field
                               v-if="viewCourse.selectedEvent.subject !== undefined"
                               v-model="viewCourse.selectedEvent.subject.name"
                               label="Subject"
-                              disabled
+                              disabled dense
                           ></v-text-field>
                           <v-text-field
                               v-if="viewCourse.selectedEvent.teacher !== undefined"
                               v-model="viewCourse.selectedEvent.teacher.name"
                               label="Teacher"
-                              disabled
+                              disabled dense
                           ></v-text-field>
                           <v-menu ref="courseDate" v-model="courseDateMenu"
                                   :close-on-content-click="true"
@@ -349,6 +354,7 @@
                               clearable
                               type="number"
                               :rules="startHourRules"
+                              style="margin-top: 15px"
                           ></v-text-field>
                           <v-text-field
                               prepend-icon="mdi-clock"
@@ -357,6 +363,7 @@
                               clearable
                               type="number"
                               :rules="endHourRules"
+                              style="margin-top: 15px"
                           ></v-text-field>
                         </v-form>
                       </v-container>
@@ -457,6 +464,8 @@ export default {
         v => !!v && !!this.editCourseInput.startHour && (v > this.editCourseInput.startHour) || 'End hour must be after start hour'
       ],
       editCourseInput: {},
+      alert: false,
+      alertText: null
     }
   },
 
@@ -502,8 +511,8 @@ export default {
     },
 
     searchCalendarCourses({start, end}) {
-      this.input.start = new Date(`${start.date}T00:00:00`);
-      this.input.end = new Date(`${end.date}T23:59:59`);
+      this.input.start = start.date;
+      this.input.end = end.date;
       this.searchCourses()
     },
 
@@ -621,7 +630,12 @@ export default {
               'Authorization': localStorage.getItem('token')
             }
           })
-          .then(() => this.searchCourses())
+          .then(() => {
+            this.searchCourses();
+            this.alert = true;
+            this.hideAlert();
+            this.alertText = 'Successfully deleted the course';
+          });
     },
 
     displayEditDialog() {
@@ -651,8 +665,19 @@ export default {
               'Authorization': localStorage.getItem('token')
             }
           })
-          .then(() => this.viewCourse.editDialog = false)
-          .then(() => this.searchCourses())
+          .then(() => {
+            this.searchCourses();
+            this.viewCourse.editDialog = false;
+            this.alert = true;
+            this.hideAlert();
+            this.alertText = 'Successfully updated the course';
+          });
+    },
+
+    hideAlert() {
+      window.setInterval(() => {
+        this.alert = false;
+      }, 5000)
     }
   },
 

@@ -86,6 +86,11 @@
           </v-toolbar>
         </v-sheet>
 
+        <v-alert v-if="alert" type="success"
+                 dense text outlined
+                 transition="fade-transition">
+          {{ this.alertText }}
+        </v-alert>
         <v-sheet height="600">
           <v-calendar
               ref="calendar"
@@ -114,8 +119,11 @@
                     style="color: white; font-size: 16px"
                 ></v-toolbar-title>
                 <v-spacer></v-spacer>
-                <v-btn icon v-if="isTeacher()">
+                <v-btn icon v-if="isTeacher()" @click.stop="displayEditDialog()">
                   <v-icon>mdi-pencil</v-icon>
+                </v-btn>
+                <v-btn icon v-if="isTeacher()" @click.stop="viewCourse.editMultipleDialog = true">
+                  <v-icon>mdi-pencil-plus</v-icon>
                 </v-btn>
               </v-toolbar>
               <v-card-text>
@@ -127,7 +135,7 @@
                   <b>Subject: </b>{{ viewCourse.selectedEvent.subject.name }}
                   ({{ viewCourse.selectedEvent.subject.internalId }})
                 </div>
-                <div v-if="viewCourse.selectedEvent.teacher">
+                <div v-if="viewCourse.selectedEvent.teacher && isStudent()">
                   <b>Teacher: </b>{{ viewCourse.selectedEvent.teacher.name }}
                   ({{ viewCourse.selectedEvent.teacher.internalId }})
                 </div>
@@ -140,7 +148,11 @@
                   <b>Title: </b>{{ viewCourse.selectedEvent.title }}
                 </div>
                 <div v-if="viewCourse.selectedEvent.description !== null">
-                  <b>Description: </b>{{ viewCourse.selectedEvent.description }}
+                  <b>Description: </b>
+                </div>
+                <div class="scroll" style="max-height: 100px"
+                     v-if="viewCourse.selectedEvent.description !== null">
+                  {{ viewCourse.selectedEvent.description }}
                 </div>
                 <div v-if="viewCourse.selectedEvent.location !== null">
                   <b>Location: </b>{{ viewCourse.selectedEvent.location }}
@@ -161,6 +173,206 @@
               </v-card-actions>
             </v-card>
           </v-menu>
+
+          <v-dialog
+              v-model="viewCourse.editDialog"
+              persistent
+              max-width="600px">
+            <v-card>
+              <v-card-title class="text-h5">
+                Edit course
+              </v-card-title>
+              <v-card-text>
+                <v-container>
+                  <v-form ref="editCourseForm">
+                    <v-text-field
+                        v-if="viewCourse.selectedEvent.specialization !== undefined"
+                        v-model="viewCourse.selectedEvent.specialization.name"
+                        label="Specialization"
+                        disabled dense
+                    ></v-text-field>
+                    <v-text-field
+                        v-if="viewCourse.selectedEvent.subject !== undefined"
+                        v-model="viewCourse.selectedEvent.subject.name"
+                        label="Subject"
+                        disabled dense
+                    ></v-text-field>
+                    <v-text-field
+                        v-if="viewCourse.selectedEvent.fullDate !== null"
+                        v-model="viewCourse.selectedEvent.fullDate"
+                        label="Course date and time"
+                        disabled dense
+                    ></v-text-field>
+                    <v-checkbox
+                        v-model="editCourseInput.isPublic"
+                        label="Is the Course Public?"
+                    ></v-checkbox>
+                    <v-text-field
+                        prepend-icon="mdi-signature-text"
+                        v-model="editCourseInput.title"
+                        label="Title"
+                        clearable
+                        counter="200"
+                        :rules="titleRules"
+                    ></v-text-field>
+                    <v-textarea
+                        prepend-icon="mdi-text-box"
+                        v-model="editCourseInput.description"
+                        label="Description"
+                        clearable
+                        style="margin-top: 25px"
+                        height="100"
+                    ></v-textarea>
+                    <v-text-field
+                        prepend-icon="mdi-map-marker-radius"
+                        v-model="editCourseInput.location"
+                        label="Location"
+                        clearable
+                        counter="500"
+                        :rules="locationRules"
+                        hint="Physical Room or Videoconference Link"
+                    ></v-text-field>
+                    <v-text-field
+                        prepend-icon="mdi-folder-multiple"
+                        v-model="editCourseInput.resources"
+                        label="Resources"
+                        clearable
+                        counter="500"
+                        :rules="resourcesRules"
+                        style="margin-top: 10px"
+                    ></v-text-field>
+                  </v-form>
+                </v-container>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="success" text @click="viewCourse.editDialog = false">
+                  Cancel
+                </v-btn>
+                <v-btn color="success" text @click="editCourse()">
+                  Save
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+
+          <v-dialog
+              v-model="viewCourse.editMultipleDialog"
+              persistent
+              max-width="600px">
+            <v-card>
+              <v-card-title class="text-h5">
+                Edit multiple courses
+              </v-card-title>
+              <v-card-text>
+                <v-container>
+                  <v-form ref="editMultipleCourseForm">
+                    <v-text-field
+                        v-if="viewCourse.selectedEvent.specialization !== undefined"
+                        v-model="viewCourse.selectedEvent.specialization.name"
+                        label="Specialization"
+                        disabled dense
+                    ></v-text-field>
+                    <v-text-field
+                        v-if="viewCourse.selectedEvent.subject !== undefined"
+                        v-model="viewCourse.selectedEvent.subject.name"
+                        label="Subject"
+                        disabled dense
+                    ></v-text-field>
+                    <v-checkbox
+                        v-model="editMultipleCourseInput.allFromSpecialization"
+                        label="Edit all your courses from the same specialization"
+                        dense
+                    ></v-checkbox>
+                    <v-checkbox
+                        v-model="editMultipleCourseInput.allFromSubject"
+                        label="Edit all your courses from the same subject"
+                        dense
+                    ></v-checkbox>
+                    <v-checkbox
+                        v-model="editMultipleCourseInput.editIsPublic"
+                        label="Edit public property"
+                        dense
+                    ></v-checkbox>
+                    <v-checkbox
+                        v-if="editMultipleCourseInput.editIsPublic"
+                        v-model="editMultipleCourseInput.isPublic"
+                        label="Are courses public?"
+                        dense
+                    ></v-checkbox>
+                    <v-checkbox
+                        v-model="editMultipleCourseInput.editTitle"
+                        label="Edit titles"
+                        dense
+                    ></v-checkbox>
+                    <v-text-field
+                        prepend-icon="mdi-signature-text"
+                        v-if="editMultipleCourseInput.editTitle"
+                        v-model="editMultipleCourseInput.title"
+                        label="Title"
+                        clearable
+                        counter="200"
+                        :rules="titleRules"
+                    ></v-text-field>
+                    <v-checkbox
+                        v-model="editMultipleCourseInput.editDescription"
+                        label="Edit descriptions"
+                        dense
+                    ></v-checkbox>
+                    <v-textarea
+                        prepend-icon="mdi-text-box"
+                        v-if="editMultipleCourseInput.editDescription"
+                        v-model="editMultipleCourseInput.description"
+                        label="Description"
+                        clearable
+                        style="margin-top: 25px"
+                        height="100"
+                    ></v-textarea>
+                    <v-checkbox
+                        v-model="editMultipleCourseInput.editLocation"
+                        label="Edit locations"
+                        dense
+                    ></v-checkbox>
+                    <v-text-field
+                        prepend-icon="mdi-map-marker-radius"
+                        v-if="editMultipleCourseInput.editLocation"
+                        v-model="editMultipleCourseInput.location"
+                        label="Location"
+                        clearable
+                        counter="500"
+                        :rules="locationRules"
+                        hint="Physical Room or Videoconference Link"
+                    ></v-text-field>
+                    <v-checkbox
+                        v-model="editMultipleCourseInput.editResources"
+                        label="Edit resources"
+                        dense
+                    ></v-checkbox>
+                    <v-text-field
+                        prepend-icon="mdi-folder-multiple"
+                        v-if="editMultipleCourseInput.editResources"
+                        v-model="editMultipleCourseInput.resources"
+                        label="Resources"
+                        clearable
+                        counter="500"
+                        :rules="resourcesRules"
+                        style="margin-top: 10px"
+                    ></v-text-field>
+                  </v-form>
+                </v-container>
+              </v-card-text>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="success" text @click="viewCourse.editMultipleDialog = false">
+                  Cancel
+                </v-btn>
+                <v-btn color="success" text @click="editMultipleCourses()">
+                  Save
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+
         </v-sheet>
         <v-overlay :value="viewCourse.selectedOpen"></v-overlay>
       </v-col>
@@ -204,15 +416,41 @@ export default {
         selectedCourse: null,
         selectedEvent: {},
         selectedOpen: false,
-      }
+        editDialog: false,
+        editMultipleDialog: false
+      },
+      editCourseInput: {},
+      titleRules: [
+        v => !!v || 'Title is required',
+        v => !!v && v.length <= 200 || 'Title must be less than 200 characters',
+      ],
+      locationRules: [
+        v => !!v || 'Location is required',
+        v => !!v && v.length <= 500 || 'Location must be less than 500 characters'
+      ],
+      resourcesRules: [
+        v => !!v || 'Resources are required',
+        v => !!v && v.length <= 500 || 'Resources must be less than 500 characters'
+      ],
+      editMultipleCourseInput: {
+        allFromSubject: false,
+        allFromSpecialization: false,
+        editTitle: false,
+        editDescription: false,
+        editLocation: false,
+        editResources: false,
+        editIsPublic: false
+      },
+      alert: false,
+      alertText: null
     }
   },
 
   methods: {
     searchCalendarCourses({start, end}) {
-      this.input.start = new Date(`${start.date}T00:00:00`);
-      this.input.end = new Date(`${end.date}T23:59:59`);
-      this.searchCourses()
+      this.input.start = start.date;
+      this.input.end = end.date;
+      this.searchCourses();
     },
 
     searchCourses() {
@@ -309,6 +547,7 @@ export default {
       this.input.specialization = {id: null, name: null};
       this.input.subject = {id: null, name: null};
       this.input.teacher = {id: null, name: null};
+      this.alert = false;
     },
 
     isTeacher() {
@@ -326,8 +565,9 @@ export default {
 
     displayCourse({nativeEvent, event}) {
       const open = () => {
-        this.viewCourse.selectedEvent = event
-        this.viewCourse.selectedCourse = nativeEvent.target
+        this.viewCourse.selectedEvent = event;
+        this.viewCourse.selectedEvent.fullDate = this.getFullDate(event);
+        this.viewCourse.selectedCourse = nativeEvent.target;
         requestAnimationFrame(() =>
             requestAnimationFrame(() => this.viewCourse.selectedOpen = true))
       }
@@ -341,9 +581,99 @@ export default {
       }
       nativeEvent.stopPropagation()
     },
+
+    displayEditDialog() {
+      this.viewCourse.editDialog = true;
+
+      let course = this.viewCourse.selectedEvent;
+      this.editCourseInput = {
+        date: course.date,
+        startHour: course.startHour,
+        endHour: course.endHour,
+        title: course.title,
+        description: course.description,
+        location: course.location,
+        resources: course.resources,
+        isPublic: course.isPublic
+      }
+    },
+
+    getFullDate(course) {
+      return course.date + ' (' + course.startHour + ':00 - ' + course.endHour + ':00)';
+    },
+
+    editCourse() {
+      if (!this.$refs.editCourseForm.validate()) {
+        return;
+      }
+      let courseId = this.viewCourse.selectedEvent.id;
+      this.$http.put('/api/courses/' + courseId, this.editCourseInput,
+          {
+            headers: {
+              'Authorization': localStorage.getItem('token')
+            }
+          })
+          .then(() => {
+            this.alert = true;
+            this.hideAlert();
+            this.alertText = 'Successfully updated the course';
+            this.viewCourse.editDialog = false;
+            this.updateCurrentCourse(this.editCourseInput)
+          });
+    },
+
+    editMultipleCourses() {
+      if (!this.$refs.editMultipleCourseForm.validate()) {
+        return;
+      }
+      let courseId = this.viewCourse.selectedEvent.id;
+      this.$http.put('/api/courses/' + courseId + '/multiple', this.editMultipleCourseInput,
+          {
+            headers: {
+              'Authorization': localStorage.getItem('token')
+            }
+          })
+          .then(response => {
+            this.searchCourses();
+            this.alert = true;
+            this.hideAlert();
+            this.alertText = 'Successfully updated ' + response.data + ' course(s)';
+            this.viewCourse.editMultipleDialog = false;
+            this.updateCurrentCourse(this.editMultipleCourseInput);
+            this.resetEditMultipleCourseInput();
+          });
+    },
+
+    resetEditMultipleCourseInput() {
+      this.editMultipleCourseInput = {
+        allFromSubject: false,
+        allFromSpecialization: false,
+        editTitle: false,
+        editDescription: false,
+        editLocation: false,
+        editResources: false,
+        editIsPublic: false
+      }
+    },
+
+    updateCurrentCourse(c) {
+      let course = this.viewCourse.selectedEvent;
+      course.title = c.title;
+      course.description = c.description;
+      course.location = c.location;
+      course.resources = c.resources;
+      course.isPublic = c.isPublic;
+    },
+
+    hideAlert() {
+      window.setInterval(() => {
+        this.alert = false;
+      }, 5000)
+    }
   },
 
   beforeMount() {
+    this.editCourseInput = {};
     this.userRole = JSON.parse(localStorage.getItem('user')).role;
     this.clearDropdowns();
     this.searchCalendarCourses({
@@ -359,5 +689,9 @@ export default {
 </script>
 
 <style scoped>
-
+div.scroll {
+  overflow-x: hidden;
+  overflow-y: auto;
+  text-align: justify;
+}
 </style>

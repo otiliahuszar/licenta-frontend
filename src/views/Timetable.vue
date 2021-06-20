@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <h1 style="text-align: center;">Timetable</h1>
+    <h1 style="text-align: center;">My Timetable</h1>
     <v-row class="fill-height">
       <v-col>
         <v-sheet height="64">
@@ -74,7 +74,15 @@
                       item-value="id" item-text="name"
                       label="Teacher"
                       return-object single-line
-                      style="max-width: 240px"
+                      style="padding-right: 20px; max-width: 240px"
+                      @change="searchCourses"
+            ></v-select>
+            <v-select v-model="input.isPublic"
+                      v-if="this.userRole !== 'EXTERNAL_USER'"
+                      :items="dropdowns.isPublic"
+                      label="Is Public"
+                      return-object single-line
+                      style="padding-right: 20px; max-width: 240px"
                       @change="searchCourses"
             ></v-select>
             <v-btn text small color="grey darken-2"
@@ -109,6 +117,7 @@
               v-model="viewCourse.selectedOpen"
               :close-on-content-click="false"
               :activator="viewCourse.selectedCourse"
+              max-width="800"
               offset-y>
             <v-card
                 color="grey lighten-4"
@@ -116,7 +125,7 @@
               <v-toolbar :color="viewCourse.selectedEvent.color" height="50">
                 <v-toolbar-title
                     v-html="viewCourse.selectedEvent.name"
-                    style="color: white; font-size: 16px"
+                    style="color: white; font-size: 16px; font-weight: bold"
                 ></v-toolbar-title>
                 <v-spacer></v-spacer>
                 <v-btn icon v-if="isTeacher()" @click.stop="displayEditDialog()">
@@ -381,9 +390,9 @@
 </template>
 
 <script>
+
 export default {
   name: "Timetable",
-
   data() {
     return {
       input: {
@@ -391,7 +400,8 @@ export default {
         subject: {id: null, name: null},
         teacher: {id: null, name: null},
         start: null,
-        end: null
+        end: null,
+        isPublic: null
       },
       start: '2021-06-01T00:00:00',
       end: '2021-06-30T23:59:59',
@@ -409,7 +419,8 @@ export default {
       dropdowns: {
         specializations: [],
         subjects: [],
-        teachers: []
+        teachers: [],
+        isPublic: ['Yes', 'No']
       },
       userRole: null,
       viewCourse: {
@@ -462,6 +473,7 @@ export default {
               teacherId: this.input.teacher.id,
               start: this.input.start,
               end: this.input.end,
+              isPublic: this.input.isPublic
             },
             headers: {
               'Authorization': localStorage.getItem('token')
@@ -547,6 +559,7 @@ export default {
       this.input.specialization = {id: null, name: null};
       this.input.subject = {id: null, name: null};
       this.input.teacher = {id: null, name: null};
+      this.input.isPublic = null;
       this.alert = false;
     },
 
@@ -555,7 +568,7 @@ export default {
     },
 
     isStudent() {
-      return this.userRole === 'STUDENT';
+      return this.userRole === 'STUDENT' || this.userRole === 'EXTERNAL_USER';
     },
 
     clearDropdownsAndSearch() {

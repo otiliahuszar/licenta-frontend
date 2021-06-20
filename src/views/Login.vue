@@ -80,10 +80,7 @@ export default {
       if (!this.$refs.form.validate()) {
         return;
       }
-      this.$http.post(path, {
-        username: this.input.username,
-        password: this.input.password
-      })
+      this.$http.post(path, this.input)
           .then(response => {
             localStorage.setItem('token', response.data.token);
             localStorage.setItem('user', JSON.stringify(response.data.user))

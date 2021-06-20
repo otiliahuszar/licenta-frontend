@@ -1,11 +1,20 @@
 <template xmlns:v-slot="http://www.w3.org/1999/XSL/Transform">
   <v-container>
-    <h1 style="text-align: center;">Timetable Management</h1>
+    <h1 style="text-align: center">Timetable Management</h1>
     <v-row style="margin-top: 20px">
 
       <v-col sm="4" cols="12" style="padding-right: 30px">
         <h3>Create timetable:</h3>
         <v-form ref="form">
+          <v-text-field
+              v-if="getInstitution() !== null"
+              v-model="getInstitution().internalId"
+              label="Institution"
+              disabled dense
+              prepend-icon="mdi-office-building-outline"
+              style="margin-top: 25px"
+          ></v-text-field>
+
           <v-menu ref="startMenu" v-model="startDateMenu"
                   :close-on-content-click="true"
                   transition="scale-transition"
@@ -19,7 +28,7 @@
                             v-bind="attrs" v-on="on"
                             :rules="startDateRules"
                             :close-on-content-click="true"
-                            style="margin-top: 15px"
+                            style="margin-top: 5px"
               ></v-text-field>
             </template>
             <v-date-picker v-model="input.semesterStart" color="success" no-title scrollable>
@@ -210,6 +219,7 @@
                     v-model="viewCourse.selectedOpen"
                     :close-on-content-click="false"
                     :activator="viewCourse.selectedCourse"
+                    max-width="800"
                     offset-y>
                   <v-card
                       color="grey lighten-4"
@@ -217,7 +227,7 @@
                     <v-toolbar :color="viewCourse.selectedEvent.color" height="50">
                       <v-toolbar-title
                           v-html="viewCourse.selectedEvent.name"
-                          style="color: white; font-size: 16px"
+                          style="color: white; font-size: 16px; font-weight: bold"
                       ></v-toolbar-title>
                       <v-spacer></v-spacer>
                       <v-btn icon @click.stop="displayEditDialog()">
@@ -678,7 +688,10 @@ export default {
       window.setInterval(() => {
         this.alert = false;
       }, 5000)
-    }
+    },
+    getInstitution() {
+      return JSON.parse(localStorage.getItem('user')).institution;
+    },
   },
 
   beforeMount() {

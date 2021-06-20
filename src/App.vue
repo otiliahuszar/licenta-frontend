@@ -37,23 +37,67 @@
         <v-icon>mdi-account-plus</v-icon>
         Register
       </v-btn>
-
-      <div v-if="isLoggedIn()"
-      style="font-size: 14px; font-style: italic">
-        Hello, {{ this.getUserName() }}
-      </div>
-
-      <v-btn color="white"
-             elevation="4"
-             depressed small
-             style="margin-left: 20px;"
-             @click="logout()"
-             v-if="isLoggedIn()">
-        <v-icon>mdi-account-remove</v-icon>
-        Logout
-      </v-btn>
-
     </v-app-bar>
+
+    <v-navigation-drawer
+        v-if="isLoggedIn()"
+        style="padding-top: 70px"
+        absolute
+        permanent
+        expand-on-hover
+        right width="230" class="fill-height">
+      <v-list nav dense>
+
+        <v-list-item>
+          <v-list-item-avatar>
+            <v-avatar color="success" size="30">
+              <div style="color: white; font-weight: bold">
+                {{ getUser().firstName.substring(0, 1) }}
+              </div>
+            </v-avatar>
+          </v-list-item-avatar>
+          <v-list-item-title>{{ getUser().firstName }} {{ getUser().lastName }}</v-list-item-title>
+        </v-list-item>
+
+        <v-divider></v-divider>
+
+        <v-list-item link to="/timetable" v-if="!isAdmin()">
+          <v-list-item-icon>
+            <v-icon>mdi-calendar-month</v-icon>
+          </v-list-item-icon>
+          <v-list-item-title>My Timetable</v-list-item-title>
+        </v-list-item>
+
+        <v-list-item link to="/timetable/admin" v-if="isAdmin()">
+          <v-list-item-icon>
+            <v-icon>mdi-calendar-month</v-icon>
+          </v-list-item-icon>
+          <v-list-item-title>My Timetable</v-list-item-title>
+        </v-list-item>
+
+        <v-list-item link to="/courses/public" v-if="shouldDisplayPublicCourses()">
+          <v-list-item-icon>
+            <v-icon>mdi-school-outline</v-icon>
+          </v-list-item-icon>
+          <v-list-item-title>Public Courses</v-list-item-title>
+        </v-list-item>
+
+        <v-list-item link to="/profile">
+          <v-list-item-icon>
+            <v-icon>mdi-card-account-details-outline</v-icon>
+          </v-list-item-icon>
+          <v-list-item-title>My Profile</v-list-item-title>
+        </v-list-item>
+
+        <v-list-item link @click="logout">
+          <v-list-item-icon>
+            <v-icon>mdi-account-remove</v-icon>
+          </v-list-item-icon>
+          <v-list-item-title>Logout</v-list-item-title>
+        </v-list-item>
+
+      </v-list>
+    </v-navigation-drawer>
 
     <v-main>
       <router-view/>
@@ -62,28 +106,28 @@
 </template>
 
 <script>
-
 export default {
   name: 'App',
-
   data() {
     return {}
   },
 
   methods: {
+    isLoggedIn() {
+      return localStorage.getItem('token') !== null;
+    },
     logout() {
       localStorage.clear();
       this.$router.push("/");
     },
-    isLoggedIn() {
-      return localStorage.getItem('token') !== null;
+    getUser() {
+      return JSON.parse(localStorage.getItem('user'));
     },
-    getUserName() {
-      let user = localStorage.getItem('user');
-      if (user === null) {
-        return null;
-      }
-      return JSON.parse(user).firstName;
+    shouldDisplayPublicCourses() {
+      return this.getUser().role === 'STUDENT' || this.getUser().role === 'EXTERNAL_USER';
+    },
+    isAdmin() {
+      return this.getUser().role === 'ADMIN';
     }
   }
 };

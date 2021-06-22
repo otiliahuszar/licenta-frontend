@@ -695,6 +695,7 @@ export default {
   },
 
   beforeMount() {
+    this.initialSearchIsEmpty = null;
     this.clearDropdowns();
     this.searchCalendarCourses({
       start: this.start,

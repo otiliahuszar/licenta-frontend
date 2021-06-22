@@ -632,6 +632,7 @@ export default {
             this.alertText = 'Successfully updated the course';
             this.viewCourse.editDialog = false;
             this.updateCurrentCourse(this.editCourseInput)
+            this.editCourseInput = {};
           });
     },
 

@@ -90,6 +90,7 @@
       <v-col sm="5"></v-col>
       <v-col sm="2">
         <v-btn color="success"
+               v-if="this.user.role === 'EXTERNAL_USER'"
                elevation="4" large
                width="200"
                @click="changePasswordDialog = true"
